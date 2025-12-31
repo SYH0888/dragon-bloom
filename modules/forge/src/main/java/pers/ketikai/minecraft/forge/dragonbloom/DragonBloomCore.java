@@ -55,13 +55,25 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
 
         @Override
         public byte[] transform(String name, String transformedName, byte[] basicClass) {
-            if (!"blockbuster.emitter.BedrockEmitter".equals(transformedName)) {
-                return basicClass;
+            byte[] enhancedClass;
+            ClassWriter writer;
+            ClassReader reader;
+            switch (transformedName) {
+                case "blockbuster.emitter.BedrockEmitter":
+                    writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+                    reader = new ClassReader(basicClass);
+                    reader.accept(new BedrockEmitterHooker(Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES);
+                    enhancedClass = writer.toByteArray();
+                    break;
+                case "eos.moe.dragoncore.eea":
+                    writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+                    reader = new ClassReader(basicClass);
+                    reader.accept(new EeaHooker(Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES);
+                    enhancedClass = writer.toByteArray();
+                    break;
+                default:
+                        return basicClass;
             }
-            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-            ClassReader reader = new ClassReader(basicClass);
-            reader.accept(new CV(Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES);
-            byte[] enhancedClass = writer.toByteArray();
             try {
                 File file = new File("./transformed-classes/" + transformedName.replace(".", "/") + ".class");
                 if (file.getParentFile().mkdirs()) {
@@ -74,8 +86,8 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
         }
     }
 
-    private static final class CV extends ClassVisitor {
-        public CV(int api, ClassVisitor cv) {
+    private static final class BedrockEmitterHooker extends ClassVisitor {
+        public BedrockEmitterHooker(int api, ClassVisitor cv) {
             super(api, cv);
         }
 
@@ -84,14 +96,14 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
             if (!"setScheme".equals(name) || !"(Lblockbuster/BedrockScheme;Ljava/util/Map;)V".equals(desc)) {
                 return super.visitMethod(access, name, desc, signature, exceptions);
             }
-            return new MV(api, super.visitMethod(access, name, desc, signature, exceptions), access, name, desc);
+            return new BedrockEmitterSetSchemeHooker(api, super.visitMethod(access, name, desc, signature, exceptions), access, name, desc);
         }
     }
 
-    private static final class MV extends AdviceAdapter {
+    private static final class BedrockEmitterSetSchemeHooker extends AdviceAdapter {
         private volatile boolean once = true;
 
-        public MV(int api, MethodVisitor mv, int access, String name, String desc) {
+        public BedrockEmitterSetSchemeHooker(int api, MethodVisitor mv, int access, String name, String desc) {
             super(api, mv, access, name, desc);
         }
 
@@ -104,11 +116,66 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
                 loadArg(1);
                 invokeStatic(
                         Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
-                        Method.getMethod("blockbuster.BedrockScheme hookBedrockEmitterSetScheme (blockbuster.emitter.BedrockEmitter, blockbuster.BedrockScheme, java.util.Map)")
+                        Method.getMethod("void hookBedrockEmitterSetScheme (blockbuster.emitter.BedrockEmitter, blockbuster.BedrockScheme, java.util.Map)")
                 );
-                dup();
             }
             super.visitVarInsn(opcode, var);
+        }
+    }
+
+    private static final class EeaHooker extends ClassVisitor {
+        public EeaHooker(int api, ClassVisitor cv) {
+            super(api, cv);
+        }
+
+        @Override
+        public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+            if (!"func_77036_a".equals(name) || !"(Lnet/minecraft/entity/EntityLivingBase;FFFFFF)V".equals(desc)) {
+                return super.visitMethod(access, name, desc, signature, exceptions);
+            }
+            return new EeaFunc_77036_aHooker(api, super.visitMethod(access, name, desc, signature, exceptions), access, name, desc);
+        }
+    }
+
+    private static final class EeaFunc_77036_aHooker extends AdviceAdapter {
+
+        public EeaFunc_77036_aHooker(int api, MethodVisitor mv, int access, String name, String desc) {
+            super(api, mv, access, name, desc);
+        }
+
+        @Override
+        public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+            // invokestatic net/minecraft/client/renderer/GlStateManager.func_179145_e ()V
+            if (opcode == Opcodes.INVOKESTATIC && "net/minecraft/client/renderer/GlStateManager".equals(owner) && "func_179145_e".equals(name) && "()V".equals(desc)) {
+                loadThis();
+                loadArg(0);
+                loadArg(1);
+                loadArg(2);
+                loadArg(3);
+                loadArg(4);
+                loadArg(5);
+                loadArg(6);
+                invokeStatic(
+                        Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
+                        Method.getMethod("void hookEeaFunc_77036_a1(eos.moe.dragoncore.eea, net.minecraft.entity.EntityLivingBase, float, float, float, float, float, float)")
+                );
+            }
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
+            // invokestatic net/minecraft/client/renderer/GlStateManager.func_179140_f ()V
+            if (opcode == Opcodes.INVOKESTATIC && "net/minecraft/client/renderer/GlStateManager".equals(owner) && "func_179140_f".equals(name) && "()V".equals(desc)) {
+                loadThis();
+                loadArg(0);
+                loadArg(1);
+                loadArg(2);
+                loadArg(3);
+                loadArg(4);
+                loadArg(5);
+                loadArg(6);
+                invokeStatic(
+                        Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
+                        Method.getMethod("void hookEeaFunc_77036_a0(eos.moe.dragoncore.eea, net.minecraft.entity.EntityLivingBase, float, float, float, float, float, float)")
+                );
+            }
         }
     }
 }
