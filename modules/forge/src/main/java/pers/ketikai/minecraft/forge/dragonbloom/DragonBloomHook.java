@@ -19,18 +19,12 @@ public abstract class DragonBloomHook {
 
     public static void hookBedrockEmitterSetScheme(@NotNull BedrockEmitter emitter, @Nullable BedrockScheme scheme, @Nullable Map<String, String> variables) {
         String schemeKey = scheme == null ? null : scheme.identifier;
-        Logger logger = DragonBloom.getLogger();
-        logger.debug(() -> {
-            String variablesContent = variables == null ? null : variables.toString();
-            return "hookBedrockEmitterSetScheme: { effect: '" + emitter.effect + "', bloom: '" + emitter.bloom + "', scheme: '" + schemeKey + "', variables: '" + variablesContent + "' }";
-        });
         if (schemeKey != null) {
             try {
                 if (!DragonBloom.getConfiguration().isMatched(schemeKey)) {
                     return;
                 }
             } catch (Exception e) {
-                logger.error(e);
                 return;
             }
             String effect = emitter.effect;
@@ -43,13 +37,22 @@ public abstract class DragonBloomHook {
         }
     }
 
-    private static final Field kea_f;
+    private static Field kea_x;
+    private static Field kea_f;
     static  {
         try {
+            kea_x = kea.class.getDeclaredField("x");
+            kea_x.setAccessible(true);
             kea_f = kea.class.getDeclaredField("f");
             kea_f.setAccessible(true);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
+        } catch (NoSuchFieldException ignored) {}
+    }
+
+    private static String getEntity(@NotNull kea that) {
+        try {
+            return (String) kea_x.get(that);
+        } catch (IllegalAccessException e) {
+            return null;
         }
     }
 
@@ -57,23 +60,37 @@ public abstract class DragonBloomHook {
         try {
             return (ResourceLocation) kea_f.get(that);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            return null;
         }
     }
 
+    private static final ThreadLocal<Boolean> eFlag = ThreadLocal.withInitial(() -> false);
+
     public static kea hookEeaFunc_77036_a0(kea kea, @NotNull eea eea, @NotNull EntityLivingBase entity, float a, float b, float c, float d, float e, float f) {
-        if (getGlowTexture(kea) == null) {
-            return kea;
-        }
-        BloomHelper.start();
+        try {
+            if (eFlag.get()) {
+                return kea;
+            }
+            String entityN = getEntity(kea);
+            if (entityN == null) {
+                return kea;
+            }
+            if (!DragonBloom.getConfiguration().isMatched(entityN)) {
+                return kea;
+            }
+            BloomHelper.start();
+            eFlag.set(true);
+        } catch (Exception ignored) {}
         return kea;
     }
 
     public static kea hookEeaFunc_77036_a1(kea kea, @NotNull eea eea, @NotNull EntityLivingBase entity, float a, float b, float c, float d, float e, float f) {
-        if (getGlowTexture(kea) == null) {
-            return kea;
-        }
-        BloomHelper.end();
+        try {
+            if (eFlag.get()) {
+                BloomHelper.end();
+                eFlag.set(false);
+            }
+        } catch (Exception ignored) {}
         return kea;
     }
 }
