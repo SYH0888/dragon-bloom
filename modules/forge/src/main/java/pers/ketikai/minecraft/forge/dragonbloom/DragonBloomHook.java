@@ -48,34 +48,29 @@ public abstract class DragonBloomHook {
         } catch (NoSuchFieldException ignored) {}
     }
 
-    private static String getEntity(@NotNull kea that) {
-        try {
-            return (String) kea_x.get(that);
-        } catch (IllegalAccessException e) {
+    private static String getEntity(kea that) throws IllegalAccessException {
+        if (that == null) {
             return null;
         }
+        return (String) kea_x.get(that);
     }
 
-    private static ResourceLocation getGlowTexture(@NotNull kea that) {
-        try {
-            return (ResourceLocation) kea_f.get(that);
-        } catch (IllegalAccessException e) {
+    private static ResourceLocation getGlowTexture(kea that) throws IllegalAccessException {
+        if (that == null) {
             return null;
         }
+        return (ResourceLocation) kea_f.get(that);
     }
 
     private static final ThreadLocal<Boolean> eFlag = ThreadLocal.withInitial(() -> false);
 
-    public static kea hookEeaFunc_77036_a0(kea kea, @NotNull eea eea, @NotNull EntityLivingBase entity, float a, float b, float c, float d, float e, float f) {
+    public static kea hookEeaFunc_77036_a0(kea kea, eea eea, EntityLivingBase entity, float a, float b, float c, float d, float e, float f) {
         try {
             if (eFlag.get()) {
                 return kea;
             }
-            String entityN = getEntity(kea);
-            if (entityN == null) {
-                return kea;
-            }
-            if (!DragonBloom.getConfiguration().isMatched(entityN)) {
+            DragonBloom.getConfiguration();
+            if (getGlowTexture(kea) == null) {
                 return kea;
             }
             BloomHelper.start();
@@ -84,7 +79,7 @@ public abstract class DragonBloomHook {
         return kea;
     }
 
-    public static kea hookEeaFunc_77036_a1(kea kea, @NotNull eea eea, @NotNull EntityLivingBase entity, float a, float b, float c, float d, float e, float f) {
+    public static kea hookEeaFunc_77036_a1(kea kea, eea eea, EntityLivingBase entity, float a, float b, float c, float d, float e, float f) {
         try {
             if (eFlag.get()) {
                 BloomHelper.end();

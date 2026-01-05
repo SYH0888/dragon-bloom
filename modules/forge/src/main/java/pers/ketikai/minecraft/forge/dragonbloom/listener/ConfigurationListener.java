@@ -2,6 +2,8 @@ package pers.ketikai.minecraft.forge.dragonbloom.listener;
 
 import blockbuster.BedrockMaterial;
 import blockbuster.render.BloomHelper;
+import eos.moe.dragoncore.eca;
+import eos.moe.dragoncore.kea;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraftforge.client.event.RenderLivingEvent;
@@ -13,10 +15,31 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.apache.logging.log4j.Logger;
 import pers.ketikai.minecraft.forge.dragonbloom.DragonBloom;
+import pers.ketikai.minecraft.forge.dragonbloom.DragonBloomHook;
 import pers.ketikai.minecraft.forge.dragonbloom.packet.event.ForgePacketReceivedEvent;
 import pers.ketikai.minecraft.protocol.dragonbloom.config.Configuration;
 
 public class ConfigurationListener {
+
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    @SideOnly(Side.CLIENT)
+    public void on(RenderLivingEvent.Pre<EntityLivingBase> event) {
+        EntityLivingBase entity = event.getEntity();
+        kea kea = eca.t.ALLATORIxDEMO(entity);
+        DragonBloomHook.hookEeaFunc_77036_a0(
+                kea, null, entity,0,0,0,0,0,0
+        );
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @SideOnly(Side.CLIENT)
+    public void on(RenderLivingEvent.Post<EntityLivingBase> event) {
+        EntityLivingBase entity = event.getEntity();
+        kea kea = eca.t.ALLATORIxDEMO(entity);
+        DragonBloomHook.hookEeaFunc_77036_a1(
+                kea, null, entity,0,0,0,0,0,0
+        );
+    }
 
     @SubscribeEvent
     @SideOnly(Side.CLIENT)

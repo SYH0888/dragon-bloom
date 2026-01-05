@@ -65,20 +65,18 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
                     reader.accept(new BedrockEmitterHooker(Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES);
                     enhancedClass = writer.toByteArray();
                     break;
-                case "eos.moe.dragoncore.eea":
-                    writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-                    reader = new ClassReader(basicClass);
-                    reader.accept(new EeaHooker(Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES);
-                    enhancedClass = writer.toByteArray();
-                    break;
+//                case "eos.moe.dragoncore.eea":
+//                    writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+//                    reader = new ClassReader(basicClass);
+//                    reader.accept(new EeaHooker(Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES);
+//                    enhancedClass = writer.toByteArray();
+//                    break;
                 default:
-                        return basicClass;
+                    return basicClass;
             }
             try {
                 File file = new File("./transformed-classes/" + transformedName.replace(".", "/") + ".class");
-                if (!file.getParentFile().mkdirs()) {
-                    throw new IOException("Failed to create directory for transformed classes.");
-                }
+                file.getParentFile().mkdirs();
                 Files.write(file.toPath(), enhancedClass);
             } catch (IOException e) {
                 e.printStackTrace();
