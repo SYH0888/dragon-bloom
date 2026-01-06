@@ -17,6 +17,7 @@
 
 package pers.ketikai.minecraft.forge.dragonbloom.proxy;
 
+import eos.moe.dragoncore.api.CoreAPI;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;

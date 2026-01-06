@@ -1,5 +1,6 @@
 package pers.ketikai.minecraft.forge.dragonbloom;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.launchwrapper.IClassTransformer;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.jetbrains.annotations.Nullable;
@@ -17,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
+import java.util.Objects;
 
 @IFMLLoadingPlugin.MCVersion("1.12.2")
 @IFMLLoadingPlugin.Name(Tags.NAME)
@@ -75,7 +77,7 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
                     return basicClass;
             }
             try {
-                File file = new File("./transformed-classes/" + transformedName.replace(".", "/") + ".class");
+                File file = new File(Minecraft.getMinecraft().gameDir, Tags.ID + "/classes/" + transformedName.replace(".", "/") + ".class");
                 file.getParentFile().mkdirs();
                 Files.write(file.toPath(), enhancedClass);
             } catch (IOException e) {
@@ -119,6 +121,102 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
                 );
             }
             super.visitVarInsn(opcode, var);
+        }
+    }
+
+    public static void main(String[] args) {
+        try {
+            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+            ClassLoader classLoader = DragonBloomCore.class.getClassLoader();
+            String className = "eos/moe/lidless/rn";
+            ClassReader reader = new ClassReader(Objects.requireNonNull(classLoader.getResourceAsStream(
+                    className + ".class"
+            )));
+            reader.accept(new LidlessHooker(Opcodes.ASM5, writer, className), ClassReader.EXPAND_FRAMES);
+            byte[] enhancedClass = writer.toByteArray();
+            File file = new File("build/k-classes/" + className + ".class");
+            file.getParentFile().mkdirs();
+            Files.write(file.toPath(), enhancedClass);
+            className = "eos/moe/lidless/oe";
+            writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+            reader = new ClassReader(Objects.requireNonNull(classLoader.getResourceAsStream(
+                    className + ".class"
+            )));
+            reader.accept(new LidlessHooker(Opcodes.ASM5, writer, className), ClassReader.EXPAND_FRAMES);
+            enhancedClass = writer.toByteArray();
+            file = new File("build/k-classes/" + className + ".class");
+            file.getParentFile().mkdirs();
+            Files.write(file.toPath(), enhancedClass);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static final class LidlessHooker extends ClassVisitor {
+        private final String className;
+        public LidlessHooker(int api, ClassVisitor cv, String className) {
+            super(api, cv);
+            this.className = className;
+        }
+
+        private boolean flag = false;
+
+        @Override
+        public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+            this.flag = "refresh".equals(name);
+            return new LidlessMethodHooker(api, super.visitMethod(access, name, desc, signature, exceptions), access, name, desc);
+        }
+
+        @Override
+        public void visitEnd() {
+            if (!flag && "eos/moe/lidless/oe".equals(className)) {
+                MethodVisitor method = visitMethod(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC, "refresh", "()V", null, null);
+                method.visitCode();
+                method.visitMethodInsn(Opcodes.INVOKESTATIC, "eos/moe/lidless/oe", "n", "()V", false);
+                method.visitInsn(Opcodes.RETURN);
+                method.visitEnd();
+            }
+            super.visitEnd();
+        }
+    }
+
+    private static final class LidlessMethodHooker extends AdviceAdapter {
+
+        public LidlessMethodHooker(int api, MethodVisitor mv, int access, String name, String desc) {
+            super(api, mv, access, name, desc);
+        }
+
+        @Override
+        public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+            if ("mkdir".equals(name) && "()Z".equals(desc)) {
+                name = "mkdirs";
+            }
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
+        }
+
+        @Override
+        public void visitLdcInsn(Object cst) {
+            if (cst instanceof String) {
+                String text = ( String) cst;
+                if (text.startsWith("lidless:")) {
+                    cst = text.replace("lidless:", "dragon-bloom:");
+                } else if (text.equals("lidless_output")){
+                    cst = "dragon-bloom/screenshots";
+                }
+            }
+            super.visitLdcInsn(cst);
+        }
+
+        @Override
+        public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+            if ("net/optifine/shaders/Shaders".equals(owner)) {
+                invokeStatic(Type.getObjectType("pers/ketikai/minecraft/forge/dragonbloom/shaders/Shaders"), Method.getMethod("boolean isShaderPackLoaded()"));
+            } else if ("eos/moe/lidless/nn".equals(owner) && "o".equals(name)) {
+                invokeStatic(Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloom"),
+                        Method.getMethod("org.apache.logging.log4j.Logger getLogger()"));
+            } else {
+                super.visitFieldInsn(opcode, owner, name, desc);
+            }
         }
     }
 

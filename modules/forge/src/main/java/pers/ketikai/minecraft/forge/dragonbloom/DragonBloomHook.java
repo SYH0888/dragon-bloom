@@ -48,44 +48,33 @@ public abstract class DragonBloomHook {
         } catch (NoSuchFieldException ignored) {}
     }
 
-    private static String getEntity(kea that) throws IllegalAccessException {
+    private static ResourceLocation getGlowTexture(kea that) {
         if (that == null) {
             return null;
         }
-        return (String) kea_x.get(that);
-    }
-
-    private static ResourceLocation getGlowTexture(kea that) throws IllegalAccessException {
-        if (that == null) {
-            return null;
+        try {
+            return (ResourceLocation) kea_f.get(that);
+        } catch (IllegalAccessException e) {
+            DragonBloom.getLogger().error("", e);
         }
-        return (ResourceLocation) kea_f.get(that);
+        return null;
     }
-
-    private static final ThreadLocal<Boolean> eFlag = ThreadLocal.withInitial(() -> false);
 
     public static kea hookEeaFunc_77036_a0(kea kea, eea eea, EntityLivingBase entity, float a, float b, float c, float d, float e, float f) {
         try {
-            if (eFlag.get()) {
-                return kea;
-            }
             DragonBloom.getConfiguration();
-            if (getGlowTexture(kea) == null) {
-                return kea;
-            }
-            BloomHelper.start();
-            eFlag.set(true);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            return kea;
+        }
+        if (getGlowTexture(kea) == null) {
+            return kea;
+        }
+        eos.moe.lidless.rn.n();
         return kea;
     }
 
     public static kea hookEeaFunc_77036_a1(kea kea, eea eea, EntityLivingBase entity, float a, float b, float c, float d, float e, float f) {
-        try {
-            if (eFlag.get()) {
-                BloomHelper.end();
-                eFlag.set(false);
-            }
-        } catch (Exception ignored) {}
+        eos.moe.lidless.rn.ALLATORIxDEMO();
         return kea;
     }
 }
