@@ -34,6 +34,11 @@ import java.util.Objects;
 @Mod(modid = Tags.ID, name = Tags.NAME, version = Tags.VERSION, dependencies = "required:dragoncore")
 public class DragonBloom {
 
+    @eos.moe.dragoncore.u(o = "刷新泛光缓冲区")
+    public static void refresh() {
+        DragonBloomHook.refresh();
+    }
+
     @SidedProxy(
             clientSide = "pers.ketikai.minecraft.forge.dragonbloom.proxy.ClientProxy",
             serverSide = "pers.ketikai.minecraft.forge.dragonbloom.proxy.CommonProxy"

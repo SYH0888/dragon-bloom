@@ -2,16 +2,15 @@ package pers.ketikai.minecraft.forge.dragonbloom;
 
 import blockbuster.BedrockScheme;
 import blockbuster.emitter.BedrockEmitter;
-import blockbuster.render.BloomHelper;
 import eos.moe.dragoncore.eea;
 import eos.moe.dragoncore.kea;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import pers.ketikai.minecraft.forge.dragonbloom.render.BloomEffect;
+import pers.ketikai.minecraft.forge.dragonbloom.render.BloomHelper;
 
-import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Field;
 import java.util.Map;
 
@@ -60,6 +59,8 @@ public abstract class DragonBloomHook {
         return null;
     }
 
+    private static final ThreadLocal<Boolean> flag = ThreadLocal.withInitial(() -> false);
+
     public static kea hookEeaFunc_77036_a0(kea kea, eea eea, EntityLivingBase entity, float a, float b, float c, float d, float e, float f) {
         try {
             DragonBloom.getConfiguration();
@@ -69,12 +70,33 @@ public abstract class DragonBloomHook {
         if (getGlowTexture(kea) == null) {
             return kea;
         }
-        eos.moe.lidless.rn.n();
+//        eos.moe.lidless.rn.n();
+        BloomHelper.start();
+        flag.set(true);
         return kea;
     }
 
     public static kea hookEeaFunc_77036_a1(kea kea, eea eea, EntityLivingBase entity, float a, float b, float c, float d, float e, float f) {
-        eos.moe.lidless.rn.ALLATORIxDEMO();
+        if (flag.get()) {
+//            eos.moe.lidless.rn.ALLATORIxDEMO();
+            BloomHelper.end();
+            flag.remove();
+        }
         return kea;
+    }
+
+    public static void refresh() {
+        if (flag.get()) {
+            BloomEffect.refresh();
+            flag.remove();
+        }
+    }
+
+    public static eos.moe.dragoncore.tw hookOmALLATORIxDEMO(eos.moe.dragoncore.tw a, eos.moe.dragoncore.bd b) {
+        eos.moe.dragoncore.lp.ALLATORIxDEMO(
+                DragonBloom.class,
+                b, a
+        );
+        return a;
     }
 }

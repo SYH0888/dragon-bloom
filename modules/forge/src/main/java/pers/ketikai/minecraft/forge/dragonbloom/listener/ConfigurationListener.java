@@ -6,7 +6,10 @@ import eos.moe.dragoncore.eca;
 import eos.moe.dragoncore.kea;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.PlayerEvent;
@@ -21,7 +24,27 @@ import pers.ketikai.minecraft.protocol.dragonbloom.config.Configuration;
 
 public class ConfigurationListener {
 
-    @SubscribeEvent(priority = EventPriority.LOWEST)
+//    @SubscribeEvent(priority = EventPriority.LOWEST)
+//    @SideOnly(Side.CLIENT)
+//    public void on(RenderLivingEvent.Pre<EntityLivingBase> event) {
+//        EntityLivingBase entity = event.getEntity();
+//        kea kea = eca.t.ALLATORIxDEMO(entity);
+//        DragonBloomHook.hookEeaFunc_77036_a0(
+//                kea, null, entity,0,0,0,0,0,0
+//        );
+//    }
+//
+//    @SubscribeEvent(priority = EventPriority.HIGHEST)
+//    @SideOnly(Side.CLIENT)
+//    public void on(RenderLivingEvent.Post<EntityLivingBase> event) {
+//        EntityLivingBase entity = event.getEntity();
+//        kea kea = eca.t.ALLATORIxDEMO(entity);
+//        DragonBloomHook.hookEeaFunc_77036_a1(
+//                kea, null, entity,0,0,0,0,0,0
+//        );
+//    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     @SideOnly(Side.CLIENT)
     public void on(RenderLivingEvent.Pre<EntityLivingBase> event) {
         EntityLivingBase entity = event.getEntity();
@@ -31,7 +54,7 @@ public class ConfigurationListener {
         );
     }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     @SideOnly(Side.CLIENT)
     public void on(RenderLivingEvent.Post<EntityLivingBase> event) {
         EntityLivingBase entity = event.getEntity();
@@ -57,20 +80,20 @@ public class ConfigurationListener {
     @SideOnly(Side.CLIENT)
     public void on(FMLNetworkEvent.ServerDisconnectionFromClientEvent event) {
         DragonBloom.setConfiguration(null);
-        DragonBloom.getLogger().info("已清除远程配置");
+        DragonBloom.getLogger().debug("已清除远程配置");
     }
 
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void on(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         DragonBloom.setConfiguration(null);
-        DragonBloom.getLogger().info("已清除远程配置");
+        DragonBloom.getLogger().debug("已清除远程配置");
     }
 
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void on(PlayerEvent.PlayerLoggedOutEvent event) {
         DragonBloom.setConfiguration(null);
-        DragonBloom.getLogger().info("已清除远程配置");
+        DragonBloom.getLogger().debug("已清除远程配置");
     }
 }

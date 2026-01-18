@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Map;
-import java.util.Objects;
 
 @IFMLLoadingPlugin.MCVersion("1.12.2")
 @IFMLLoadingPlugin.Name(Tags.NAME)
@@ -73,6 +72,12 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
 //                    reader.accept(new EeaHooker(Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES);
 //                    enhancedClass = writer.toByteArray();
 //                    break;
+                case "eos.moe.dragoncore.om":
+                    writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+                    reader = new ClassReader(basicClass);
+                    reader.accept(new OmHooker(Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES);
+                    enhancedClass = writer.toByteArray();
+                    break;
                 default:
                     return basicClass;
             }
@@ -124,102 +129,6 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
         }
     }
 
-    public static void main(String[] args) {
-        try {
-            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-            ClassLoader classLoader = DragonBloomCore.class.getClassLoader();
-            String className = "eos/moe/lidless/rn";
-            ClassReader reader = new ClassReader(Objects.requireNonNull(classLoader.getResourceAsStream(
-                    className + ".class"
-            )));
-            reader.accept(new LidlessHooker(Opcodes.ASM5, writer, className), ClassReader.EXPAND_FRAMES);
-            byte[] enhancedClass = writer.toByteArray();
-            File file = new File("build/k-classes/" + className + ".class");
-            file.getParentFile().mkdirs();
-            Files.write(file.toPath(), enhancedClass);
-            className = "eos/moe/lidless/oe";
-            writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-            reader = new ClassReader(Objects.requireNonNull(classLoader.getResourceAsStream(
-                    className + ".class"
-            )));
-            reader.accept(new LidlessHooker(Opcodes.ASM5, writer, className), ClassReader.EXPAND_FRAMES);
-            enhancedClass = writer.toByteArray();
-            file = new File("build/k-classes/" + className + ".class");
-            file.getParentFile().mkdirs();
-            Files.write(file.toPath(), enhancedClass);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static final class LidlessHooker extends ClassVisitor {
-        private final String className;
-        public LidlessHooker(int api, ClassVisitor cv, String className) {
-            super(api, cv);
-            this.className = className;
-        }
-
-        private boolean flag = false;
-
-        @Override
-        public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-            this.flag = "refresh".equals(name);
-            return new LidlessMethodHooker(api, super.visitMethod(access, name, desc, signature, exceptions), access, name, desc);
-        }
-
-        @Override
-        public void visitEnd() {
-            if (!flag && "eos/moe/lidless/oe".equals(className)) {
-                MethodVisitor method = visitMethod(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC, "refresh", "()V", null, null);
-                method.visitCode();
-                method.visitMethodInsn(Opcodes.INVOKESTATIC, "eos/moe/lidless/oe", "n", "()V", false);
-                method.visitInsn(Opcodes.RETURN);
-                method.visitEnd();
-            }
-            super.visitEnd();
-        }
-    }
-
-    private static final class LidlessMethodHooker extends AdviceAdapter {
-
-        public LidlessMethodHooker(int api, MethodVisitor mv, int access, String name, String desc) {
-            super(api, mv, access, name, desc);
-        }
-
-        @Override
-        public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
-            if ("mkdir".equals(name) && "()Z".equals(desc)) {
-                name = "mkdirs";
-            }
-            super.visitMethodInsn(opcode, owner, name, desc, itf);
-        }
-
-        @Override
-        public void visitLdcInsn(Object cst) {
-            if (cst instanceof String) {
-                String text = ( String) cst;
-                if (text.startsWith("lidless:")) {
-                    cst = text.replace("lidless:", "dragon-bloom:");
-                } else if (text.equals("lidless_output")){
-                    cst = "dragon-bloom/screenshots";
-                }
-            }
-            super.visitLdcInsn(cst);
-        }
-
-        @Override
-        public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-            if ("net/optifine/shaders/Shaders".equals(owner)) {
-                invokeStatic(Type.getObjectType("pers/ketikai/minecraft/forge/dragonbloom/shaders/Shaders"), Method.getMethod("boolean isShaderPackLoaded()"));
-            } else if ("eos/moe/lidless/nn".equals(owner) && "o".equals(name)) {
-                invokeStatic(Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloom"),
-                        Method.getMethod("org.apache.logging.log4j.Logger getLogger()"));
-            } else {
-                super.visitFieldInsn(opcode, owner, name, desc);
-            }
-        }
-    }
-
     private static final class EeaHooker extends ClassVisitor {
         public EeaHooker(int api, ClassVisitor cv) {
             super(api, cv);
@@ -238,6 +147,100 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
 
         public EeaFunc_77036_aHooker(int api, MethodVisitor mv, int access, String name, String desc) {
             super(api, mv, access, name, desc);
+        }
+
+        private boolean first = true;
+
+        @Override
+        public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+//            // invokestatic net/minecraft/client/renderer/GlStateManager.func_179145_e ()V
+//            if (opcode == Opcodes.INVOKESTATIC && "net/minecraft/client/renderer/GlStateManager".equals(owner) && "func_179145_e".equals(name) && "()V".equals(desc)) {
+//                loadThis();
+//                loadArg(0);
+//                loadArg(1);
+//                loadArg(2);
+//                loadArg(3);
+//                loadArg(4);
+//                loadArg(5);
+//                loadArg(6);
+//                invokeStatic(
+//                        Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
+//                        Method.getMethod("eos.moe.dragoncore.kea hookEeaFunc_77036_a1(eos.moe.dragoncore.kea, eos.moe.dragoncore.eea, net.minecraft.entity.EntityLivingBase, float, float, float, float, float, float)")
+//                );
+//            }
+//            super.visitMethodInsn(opcode, owner, name, desc, itf);
+//            // invokestatic net/minecraft/client/renderer/GlStateManager.func_179140_f ()V
+//            if (opcode == Opcodes.INVOKESTATIC && "net/minecraft/client/renderer/GlStateManager".equals(owner) && "func_179140_f".equals(name) && "()V".equals(desc)) {
+//                loadThis();
+//                loadArg(0);
+//                loadArg(1);
+//                loadArg(2);
+//                loadArg(3);
+//                loadArg(4);
+//                loadArg(5);
+//                loadArg(6);
+//                invokeStatic(
+//                        Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
+//                        Method.getMethod("eos.moe.dragoncore.kea hookEeaFunc_77036_a0(eos.moe.dragoncore.kea, eos.moe.dragoncore.eea, net.minecraft.entity.EntityLivingBase, float, float, float, float, float, float)")
+//                );
+//            }
+            // invokevirtual eos/moe/dragoncore/kea.k ()Z
+            if (opcode == Opcodes.INVOKEVIRTUAL && "eos/moe/dragoncore/kea".equals(owner) && "k".equals(name) && "()Z".equals(desc)) {
+                loadThis();
+                loadArg(0);
+                loadArg(1);
+                loadArg(2);
+                loadArg(3);
+                loadArg(4);
+                loadArg(5);
+                loadArg(6);
+                if (first) {
+                    invokeStatic(
+                            Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
+                            Method.getMethod("eos.moe.dragoncore.kea hookEeaFunc_77036_a0(eos.moe.dragoncore.kea, eos.moe.dragoncore.eea, net.minecraft.entity.EntityLivingBase, float, float, float, float, float, float)")
+                    );
+                    this.first = false;
+                } else {
+                    invokeStatic(
+                            Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
+                            Method.getMethod("eos.moe.dragoncore.kea hookEeaFunc_77036_a1(eos.moe.dragoncore.kea, eos.moe.dragoncore.eea, net.minecraft.entity.EntityLivingBase, float, float, float, float, float, float)")
+                    );
+                }
+            }
+            super.visitMethodInsn(opcode, owner, name, desc, itf);
+        }
+    }
+
+    private static final class OmHooker extends ClassVisitor {
+        public OmHooker(int api, ClassVisitor cv) {
+            super(api, cv);
+        }
+
+        @Override
+        public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+            if (!"ALLATORIxDEMO".equals(name) || !"(Leos/moe/dragoncore/bd;)Leos/moe/dragoncore/tw;".equals(desc)) {
+                return super.visitMethod(access, name, desc, signature, exceptions);
+            }
+            return new OmALLATORIxDEMOHooker(api, super.visitMethod(access, name, desc, signature, exceptions), access, name, desc);
+        }
+    }
+
+    private static final class OmALLATORIxDEMOHooker extends AdviceAdapter {
+
+        public OmALLATORIxDEMOHooker(int api, MethodVisitor mv, int access, String name, String desc) {
+            super(api, mv, access, name, desc);
+        }
+
+        @Override
+        protected void onMethodExit(int opcode) {
+            if (opcode == Opcodes.ARETURN) {
+                loadArg(0);
+                invokeStatic(
+                        Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
+                        Method.getMethod("eos.moe.dragoncore.tw hookOmALLATORIxDEMO(eos.moe.dragoncore.tw, eos.moe.dragoncore.bd)")
+                );
+            }
+            super.onMethodExit(opcode);
         }
 
         private boolean first = true;
