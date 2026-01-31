@@ -86,10 +86,7 @@ public abstract class DragonBloomHook {
     }
 
     public static void refresh() {
-        if (flag.get()) {
-            BloomEffect.refresh();
-            flag.remove();
-        }
+        BloomEffect.refresh();
     }
 
     public static eos.moe.dragoncore.tw hookOmALLATORIxDEMO(eos.moe.dragoncore.tw a, eos.moe.dragoncore.bd b) {

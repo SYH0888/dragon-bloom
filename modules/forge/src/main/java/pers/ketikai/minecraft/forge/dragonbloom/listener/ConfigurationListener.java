@@ -44,35 +44,35 @@ public class ConfigurationListener {
 //        );
 //    }
 
-    @SubscribeEvent(priority = EventPriority.HIGHEST)
-    @SideOnly(Side.CLIENT)
-    public void on(RenderLivingEvent.Pre<EntityLivingBase> event) {
-        EntityLivingBase entity = event.getEntity();
-        kea kea = eca.t.ALLATORIxDEMO(entity);
-        DragonBloomHook.hookEeaFunc_77036_a0(
-                kea, null, entity,0,0,0,0,0,0
-        );
-    }
-
-    @SubscribeEvent(priority = EventPriority.LOWEST)
-    @SideOnly(Side.CLIENT)
-    public void on(RenderLivingEvent.Post<EntityLivingBase> event) {
-        EntityLivingBase entity = event.getEntity();
-        kea kea = eca.t.ALLATORIxDEMO(entity);
-        DragonBloomHook.hookEeaFunc_77036_a1(
-                kea, null, entity,0,0,0,0,0,0
-        );
-    }
+//    @SubscribeEvent(priority = EventPriority.HIGHEST)
+//    @SideOnly(Side.CLIENT)
+//    public void on(RenderLivingEvent.Pre<EntityLivingBase> event) {
+//        EntityLivingBase entity = event.getEntity();
+//        kea kea = eca.t.ALLATORIxDEMO(entity);
+//        DragonBloomHook.hookEeaFunc_77036_a0(
+//                kea, null, entity,0,0,0,0,0,0
+//        );
+//    }
+//
+//    @SubscribeEvent(priority = EventPriority.LOWEST)
+//    @SideOnly(Side.CLIENT)
+//    public void on(RenderLivingEvent.Post<EntityLivingBase> event) {
+//        EntityLivingBase entity = event.getEntity();
+//        kea kea = eca.t.ALLATORIxDEMO(entity);
+//        DragonBloomHook.hookEeaFunc_77036_a1(
+//                kea, null, entity,0,0,0,0,0,0
+//        );
+//    }
 
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void on(ForgePacketReceivedEvent event) {
         Object payload = event.getPayload();
         Logger logger = DragonBloom.getLogger();
-        logger.info("接收到远程数据");
+//        logger.info("接收到远程数据");
         if (payload instanceof Configuration) {
             DragonBloom.setConfiguration(((Configuration) payload).compile());
-            logger.info("已加载远程配置");
+//            logger.info("已加载远程配置");
         }
     }
 
@@ -80,20 +80,20 @@ public class ConfigurationListener {
     @SideOnly(Side.CLIENT)
     public void on(FMLNetworkEvent.ServerDisconnectionFromClientEvent event) {
         DragonBloom.setConfiguration(null);
-        DragonBloom.getLogger().debug("已清除远程配置");
+//        DragonBloom.getLogger().debug("已清除远程配置");
     }
 
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void on(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         DragonBloom.setConfiguration(null);
-        DragonBloom.getLogger().debug("已清除远程配置");
+//        DragonBloom.getLogger().debug("已清除远程配置");
     }
 
     @SubscribeEvent
     @SideOnly(Side.CLIENT)
     public void on(PlayerEvent.PlayerLoggedOutEvent event) {
         DragonBloom.setConfiguration(null);
-        DragonBloom.getLogger().debug("已清除远程配置");
+//        DragonBloom.getLogger().debug("已清除远程配置");
     }
 }

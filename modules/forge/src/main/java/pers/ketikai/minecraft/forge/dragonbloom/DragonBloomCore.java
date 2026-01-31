@@ -66,12 +66,12 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
                     reader.accept(new BedrockEmitterHooker(Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES);
                     enhancedClass = writer.toByteArray();
                     break;
-//                case "eos.moe.dragoncore.eea":
-//                    writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-//                    reader = new ClassReader(basicClass);
-//                    reader.accept(new EeaHooker(Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES);
-//                    enhancedClass = writer.toByteArray();
-//                    break;
+                case "eos.moe.dragoncore.eea":
+                    writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+                    reader = new ClassReader(basicClass);
+                    reader.accept(new EeaHooker(Opcodes.ASM5, writer), ClassReader.EXPAND_FRAMES);
+                    enhancedClass = writer.toByteArray();
+                    break;
                 case "eos.moe.dragoncore.om":
                     writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
                     reader = new ClassReader(basicClass);
@@ -241,67 +241,6 @@ public class DragonBloomCore implements IFMLLoadingPlugin {
                 );
             }
             super.onMethodExit(opcode);
-        }
-
-        private boolean first = true;
-
-        @Override
-        public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
-//            // invokestatic net/minecraft/client/renderer/GlStateManager.func_179145_e ()V
-//            if (opcode == Opcodes.INVOKESTATIC && "net/minecraft/client/renderer/GlStateManager".equals(owner) && "func_179145_e".equals(name) && "()V".equals(desc)) {
-//                loadThis();
-//                loadArg(0);
-//                loadArg(1);
-//                loadArg(2);
-//                loadArg(3);
-//                loadArg(4);
-//                loadArg(5);
-//                loadArg(6);
-//                invokeStatic(
-//                        Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
-//                        Method.getMethod("eos.moe.dragoncore.kea hookEeaFunc_77036_a1(eos.moe.dragoncore.kea, eos.moe.dragoncore.eea, net.minecraft.entity.EntityLivingBase, float, float, float, float, float, float)")
-//                );
-//            }
-//            super.visitMethodInsn(opcode, owner, name, desc, itf);
-//            // invokestatic net/minecraft/client/renderer/GlStateManager.func_179140_f ()V
-//            if (opcode == Opcodes.INVOKESTATIC && "net/minecraft/client/renderer/GlStateManager".equals(owner) && "func_179140_f".equals(name) && "()V".equals(desc)) {
-//                loadThis();
-//                loadArg(0);
-//                loadArg(1);
-//                loadArg(2);
-//                loadArg(3);
-//                loadArg(4);
-//                loadArg(5);
-//                loadArg(6);
-//                invokeStatic(
-//                        Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
-//                        Method.getMethod("eos.moe.dragoncore.kea hookEeaFunc_77036_a0(eos.moe.dragoncore.kea, eos.moe.dragoncore.eea, net.minecraft.entity.EntityLivingBase, float, float, float, float, float, float)")
-//                );
-//            }
-            // invokevirtual eos/moe/dragoncore/kea.k ()Z
-            if (opcode == Opcodes.INVOKEVIRTUAL && "eos/moe/dragoncore/kea".equals(owner) && "k".equals(name) && "()Z".equals(desc)) {
-                loadThis();
-                loadArg(0);
-                loadArg(1);
-                loadArg(2);
-                loadArg(3);
-                loadArg(4);
-                loadArg(5);
-                loadArg(6);
-                if (first) {
-                    invokeStatic(
-                            Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
-                            Method.getMethod("eos.moe.dragoncore.kea hookEeaFunc_77036_a0(eos.moe.dragoncore.kea, eos.moe.dragoncore.eea, net.minecraft.entity.EntityLivingBase, float, float, float, float, float, float)")
-                    );
-                    this.first = false;
-                } else {
-                    invokeStatic(
-                            Type.getType("pers/ketikai/minecraft/forge/dragonbloom/DragonBloomHook"),
-                            Method.getMethod("eos.moe.dragoncore.kea hookEeaFunc_77036_a1(eos.moe.dragoncore.kea, eos.moe.dragoncore.eea, net.minecraft.entity.EntityLivingBase, float, float, float, float, float, float)")
-                    );
-                }
-            }
-            super.visitMethodInsn(opcode, owner, name, desc, itf);
         }
     }
 }
