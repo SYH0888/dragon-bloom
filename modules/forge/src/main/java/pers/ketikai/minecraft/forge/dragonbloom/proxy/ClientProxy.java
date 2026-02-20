@@ -17,11 +17,15 @@
 
 package pers.ketikai.minecraft.forge.dragonbloom.proxy;
 
-import eos.moe.dragoncore.api.CoreAPI;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.jetbrains.annotations.NotNull;
+import pers.ketikai.minecraft.forge.dragonbloom.DragonBloom;
+import pers.ketikai.minecraft.forge.dragonbloom.configuration.ClientConfiguration;
 import pers.ketikai.minecraft.forge.dragonbloom.listener.ConfigurationListener;
 import pers.ketikai.minecraft.forge.dragonbloom.packet.ForgePacketChannel;
 import pers.ketikai.minecraft.protocol.dragonbloom.codec.GsonPacketCodec;
@@ -29,6 +33,14 @@ import pers.ketikai.minecraft.protocol.dragonbloom.config.Configuration;
 import pers.ketikai.minecraft.protocol.dragonbloom.util.Entry;
 import pers.ketikai.minecraft.tags.dragonbloom.Tags;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Objects;
 
 public class ClientProxy extends CommonProxy {
@@ -46,6 +58,13 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(new ConfigurationListener());
         channel = new ForgePacketChannel(Tags.ID,
                 Entry.of(Configuration.ID, new GsonPacketCodec<>(Configuration.class)));
+
+        File file = new File(Minecraft.getMinecraft().gameDir, Tags.ID + "/config.json");
+        try {
+            DragonBloom.setClientConfiguration(ClientConfiguration.load(file));
+        } catch (IOException e) {
+            DragonBloom.getLogger().error(e);
+        }
     }
 
     @Override

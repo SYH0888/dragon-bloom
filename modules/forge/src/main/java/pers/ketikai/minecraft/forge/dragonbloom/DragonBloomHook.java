@@ -16,23 +16,35 @@ import java.util.Map;
 
 public abstract class DragonBloomHook {
 
+    @SuppressWarnings("UnusedAssignment")
     public static void hookBedrockEmitterSetScheme(@NotNull BedrockEmitter emitter, @Nullable BedrockScheme scheme, @Nullable Map<String, String> variables) {
         String schemeKey = scheme == null ? null : scheme.identifier;
+        boolean enabled = false;
         if (schemeKey != null) {
             try {
-                if (!DragonBloom.getConfiguration().isMatched(schemeKey)) {
-                    return;
+                if (DragonBloom.getClientConfiguration().getEnabled() && DragonBloom.getConfiguration().isMatched(schemeKey)) {
+                    enabled = true;
                 }
-            } catch (Exception e) {
-                return;
-            }
+            } catch (Exception ignored) {}
             String effect = emitter.effect;
             if (effect == null) {
-                emitter.effect = "@";
-            } else if (!effect.contains("@")) {
-                emitter.effect = "@" + effect;
+                if (enabled) {
+                    emitter.effect = "@";
+                    emitter.bloom = true;
+                } else {
+                    emitter.bloom = false;
+                }
+            } else if (enabled) {
+                if (!effect.contains("@")) {
+                    emitter.effect = "@" + effect;
+                }
+                emitter.bloom = true;
+            } else {
+                if (effect.contains("@")) {
+                    emitter.effect = effect.replace("@", "");
+                }
+                emitter.bloom = false;
             }
-            emitter.bloom = true;
         }
     }
 
@@ -63,6 +75,9 @@ public abstract class DragonBloomHook {
 
     public static kea hookEeaFunc_77036_a0(kea kea, eea eea, EntityLivingBase entity, float a, float b, float c, float d, float e, float f) {
         try {
+            if (!DragonBloom.getClientConfiguration().getEnabled()) {
+                return kea;
+            }
             DragonBloom.getConfiguration();
         } catch (Exception ignored) {
             return kea;

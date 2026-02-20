@@ -17,6 +17,7 @@
 
 package pers.ketikai.minecraft.forge.dragonbloom;
 
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -25,18 +26,55 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import pers.ketikai.minecraft.forge.dragonbloom.configuration.ClientConfiguration;
 import pers.ketikai.minecraft.forge.dragonbloom.proxy.CommonProxy;
 import pers.ketikai.minecraft.protocol.dragonbloom.config.CompiledConfiguration;
 import pers.ketikai.minecraft.tags.dragonbloom.Tags;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Objects;
 
 @Mod(modid = Tags.ID, name = Tags.NAME, version = Tags.VERSION, dependencies = "required:dragoncore")
 public class DragonBloom {
 
-    @eos.moe.dragoncore.u(o = "刷新泛光缓冲区")
+    @eos.moe.dragoncore.u(o = "刷新泛光")
     public static void refresh() {
+        getLogger().info("refresh");
         DragonBloomHook.refresh();
+        eos.moe.dragoncore.zo.ALLATORIxDEMO();
+    }
+
+    @eos.moe.dragoncore.u(o = "启用泛光")
+    public static void enable() {
+        getLogger().info("enable");
+        try {
+            getClientConfiguration().setEnabled(true);
+        } catch (Exception e) {
+            getLogger().error(e);
+            return;
+        }
+        eos.moe.dragoncore.zo.ALLATORIxDEMO();
+    }
+
+    @eos.moe.dragoncore.u(o = "禁用泛光")
+    public static void disable() {
+        getLogger().info("disable");
+        ClientConfiguration clientConfiguration;
+        try {
+            clientConfiguration = getClientConfiguration();
+        } catch (Exception e) {
+            getLogger().error(e);
+            return;
+        }
+        clientConfiguration.setEnabled(false);
+        File file = new File(Minecraft.getMinecraft().gameDir, Tags.ID + "/config.json");
+        try {
+            ClientConfiguration.save(file, clientConfiguration);
+        } catch (IOException e) {
+            getLogger().error(e);
+        }
+        eos.moe.dragoncore.zo.ALLATORIxDEMO();
     }
 
     @SidedProxy(
@@ -46,6 +84,7 @@ public class DragonBloom {
     public static CommonProxy proxy;
     private static Logger logger;
     private static volatile CompiledConfiguration configuration;
+    private static volatile ClientConfiguration clientConfiguration;
 
     @NotNull
     public static Logger getLogger() {
@@ -59,6 +98,15 @@ public class DragonBloom {
 
     public static void setConfiguration(CompiledConfiguration configuration) {
         DragonBloom.configuration = configuration;
+    }
+
+    @NotNull
+    public static ClientConfiguration getClientConfiguration() {
+        return Objects.requireNonNull(clientConfiguration);
+    }
+
+    public static void setClientConfiguration(ClientConfiguration configuration) {
+        DragonBloom.clientConfiguration = configuration;
     }
 
     @Mod.EventHandler
