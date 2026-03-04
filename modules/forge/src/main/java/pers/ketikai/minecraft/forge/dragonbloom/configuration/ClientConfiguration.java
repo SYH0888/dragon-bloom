@@ -29,7 +29,7 @@ public class ClientConfiguration {
         if (!file.exists()) {
             file.getParentFile().mkdirs();
         }
-        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+        try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
             String json = GSON.toJson(clientConfiguration);
             writer.write(json);
             writer.flush();

@@ -48,11 +48,22 @@ public class DragonBloom {
     @eos.moe.dragoncore.u(o = "启用泛光")
     public static void enable() {
         getLogger().info("enable");
+        ClientConfiguration clientConfiguration;
         try {
-            getClientConfiguration().setEnabled(true);
+            clientConfiguration = getClientConfiguration();
         } catch (Exception e) {
             getLogger().error(e);
             return;
+        }
+        if (clientConfiguration.getEnabled()) {
+            return;
+        }
+        clientConfiguration.setEnabled(true);
+        File file = new File(Minecraft.getMinecraft().gameDir, Tags.ID + "/config.json");
+        try {
+            ClientConfiguration.save(file, clientConfiguration);
+        } catch (IOException e) {
+            getLogger().error(e);
         }
         eos.moe.dragoncore.zo.ALLATORIxDEMO();
     }
@@ -65,6 +76,9 @@ public class DragonBloom {
             clientConfiguration = getClientConfiguration();
         } catch (Exception e) {
             getLogger().error(e);
+            return;
+        }
+        if (!clientConfiguration.getEnabled()) {
             return;
         }
         clientConfiguration.setEnabled(false);
